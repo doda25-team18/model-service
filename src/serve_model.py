@@ -5,8 +5,12 @@ import joblib
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 import pandas as pd
+import sys
 
 from text_preprocessing import prepare, _extract_message_len, _text_process
+
+sys.modules['__main__']._text_process = _text_process
+sys.modules['__main__']._extract_message_len = _extract_message_len
 
 app = Flask(__name__)
 swagger = Swagger(app)
