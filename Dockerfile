@@ -15,6 +15,7 @@ COPY output/model.joblib ./output/model.joblib
 ENV PYTHONPATH=/app/src
 ENV MODEL_SERVICE_PORT=8081
 
+EXPOSE ${MODEL_SERVICE_PORT}
 
 # Use gunicorn to run in production mode
 ENTRYPOINT [ "sh", "-c", "gunicorn --bind 0.0.0.0:${MODEL_SERVICE_PORT} src.serve_model:app" ]
