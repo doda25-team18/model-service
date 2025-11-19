@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Cache pip (optional)
+      - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -32,38 +32,32 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      - name: Install uv (Astral) and add to PATH
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Sync dependencies (uv)
-        run: uv sync
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
 
       - name: Download dataset
-        run: uv run python src/get_data.py
+        run: python src/get_data.py
 
       - name: Preprocess data
-        run: uv run python src/text_preprocessing.py
+        run: python src/text_preprocessing.py
 
       - name: Train model
-        run: uv run python src/text_classification.py
+        run: python src/text_classification.py
 
       - name: Show output (debug)
         run: ls -lah output || true
 
       - name: Verify artifacts
         run: |
-          echo "Checking for expected artifact files..."
           if [ ! -f output/model.joblib ]; then
-            echo "ERROR: output/model.joblib not found"
+            echo "ERROR: model.joblib missing"
             exit 1
           fi
           if [ ! -f output/preprocessor.joblib ]; then
-            echo "ERROR: output/preprocessor.joblib not found"
+            echo "ERROR: preprocessor.joblib missing"
             exit 1
           fi
-          echo "Artifacts found."
+          echo "Artifacts OK"
 
       - name: Create Release
         if: success()
