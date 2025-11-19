@@ -5,20 +5,51 @@ on:
   push:
     branches:
       - f9-automated-training
+
 jobs:
   train-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
+    strategy:
+      matrix:
+        python-version: [3.10]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install system deps (if needed)
+        # optional: add apt-get or other system packages here
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install Python dependencies from requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          else
+            echo "requirements.txt not found, skipping pip install"
+          fi
+
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      - name: Sync dependencies
+      - name: Sync dependencies (uv)
         run: uv sync
 
       - name: Download dataset
