@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src
 # Copy model, should be changed in F10
-COPY output ./output
+# COPY output ./output
 
 # Gunicorn needs this to resolve the imports correctly
 ENV PYTHONPATH=/app/src
