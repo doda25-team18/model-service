@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - f9-automated-training
       - main
 
 jobs:
