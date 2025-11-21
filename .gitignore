@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Output and generated files
+output/
+
+# Version control
+.git/
+
+# CI/CD
+.github/

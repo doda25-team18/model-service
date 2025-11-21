@@ -1,7 +1,7 @@
 """
 Preprocess the data to be trained by the learning algorithm.
 """
-
+import os
 import pandas as pd
 import numpy as np
 
@@ -15,6 +15,10 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.pipeline import make_union, make_pipeline
 from joblib import dump, load
+
+MODEL_DIR = os.getenv("MODEL_DIR", "/app/models")
+MODEL_VERSION = os.getenv("MODEL_VERSION", "model-6")
+PREPROCESSOR_PATH = f"{MODEL_DIR}/{MODEL_VERSION}/preprocessor.joblib"
 
 def _load_data():
     messages = pd.read_csv(
@@ -72,7 +76,7 @@ def _preprocess(messages):
     return preprocessed_data
 
 def prepare(message):
-    preprocessor = load('output/preprocessor.joblib')
+    preprocessor = load(PREPROCESSOR_PATH)
     return preprocessor.transform([message])
 
 
