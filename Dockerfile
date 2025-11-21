@@ -8,13 +8,17 @@ COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src
-# Copy model, should be changed in F10
-COPY output ./output
 
+RUN mkdir -p /app/models
+
+ENV MODEL_DIR=/app/models
+ENV MODEL_VERSION=model-7
+ENV MODEL_REPO=doda25-team18/model-service
 # Gunicorn needs this to resolve the imports correctly
 ENV PYTHONPATH=/app/src
 ENV MODEL_SERVICE_PORT=8081
-
+# This is needed to show the logs
+ENV PYTHONUNBUFFERED=1
 
 # Use gunicorn to run in production mode
-ENTRYPOINT [ "sh", "-c", "gunicorn --bind 0.0.0.0:${MODEL_SERVICE_PORT} src.serve_model:app" ]
+ENTRYPOINT [ "sh", "-c", "gunicorn --capture-output --log-level info --bind 0.0.0.0:${MODEL_SERVICE_PORT} src.serve_model:app" ]
