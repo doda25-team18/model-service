@@ -1,0 +1,75 @@
+name: Train & Release Model
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  train-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"   
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-312-${{ hashFiles('/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-312-
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Download dataset
+        run: python src/get_data.py
+      
+      - name: Create output directory
+        run: mkdir -p output
+
+      - name: Preprocess data
+        run: python src/text_preprocessing.py
+
+      - name: Train model
+        run: python src/text_classification.py
+
+      - name: Show output (debug)
+        run: ls -lah output || true
+
+      - name: Verify artifacts
+        run: |
+          if [ ! -f output/model.joblib ]; then
+            echo "ERROR: model.joblib missing"
+            exit 1
+          fi
+          if [ ! -f output/preprocessor.joblib ]; then
+            echo "ERROR: preprocessor.joblib missing"
+            exit 1
+          fi
+          echo "Artifacts OK"
+
+      - name: Create Release
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: model-${{ github.run_number }}
+          name: "Model Release ${{ github.run_number }}"
+          files: |
+            output/model.joblib
+            output/preprocessor.joblib
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
